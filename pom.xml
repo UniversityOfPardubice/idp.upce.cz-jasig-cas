@@ -470,7 +470,7 @@ pTSqrOnmqmUUnopqmvummmmmmUUnopqmvummmmmmUUA1jJ
     <repository>
       <id>jasig-repository</id>
       <name>Jasig Maven2 Repository</name>
-      <url>http://developer.ja-sig.org/maven2</url>
+      <url>https://oss.sonatype.org/content/repositories/releases</url>
     </repository>
 
     <repository>
