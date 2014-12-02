@@ -474,6 +474,12 @@ pTSqrOnmqmUUnopqmvummmmmmUUnopqmvummmmmmUUA1jJ
     </repository>
 
     <repository>
+      <id>jasig-legacy</id>
+      <name>Jasig Maven2 Legacy Repository</name>
+      <url>http://developer.jasig.org/repo/content/groups/m2-legacy/</url>
+    </repository>
+
+    <repository>
       <id>jboss</id>
       <name>JBoss Repository</name>
       <layout>default</layout>
