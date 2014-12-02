@@ -28,6 +28,11 @@
   <artifactId>cas-server-webapp</artifactId>
   <packaging>war</packaging>
   <name>Jasig CAS Web Application</name>
+  <properties>
+    <cas.version>3.5.2</cas.version>
+    <apache.commons.pool.version>1.6</apache.commons.pool.version>
+    <hibernate.version>4.0.1.Final</hibernate.version>
+  </properties>
   <dependencies>
 
     <dependency>
@@ -187,6 +192,85 @@
       <artifactId>hibernate-validator</artifactId>
       <scope>runtime</scope>
     </dependency>
+
+
+    <!-- Generic -->
+    <dependency>
+      <groupId>org.jasig.cas</groupId>
+      <artifactId>cas-server-support-generic</artifactId>
+      <version>${cas.version}</version>
+    </dependency>
+    <!-- /Generic -->
+    <!-- LDAP -->
+    <dependency>
+      <groupId>org.jasig.cas</groupId>
+      <artifactId>cas-server-support-ldap</artifactId>
+      <version>${cas.version}</version>
+    </dependency>
+    <dependency>
+      <groupId>commons-pool</groupId>
+      <artifactId>commons-pool</artifactId>
+      <version>${apache.commons.pool.version}</version>
+    </dependency>
+    <!-- /LDAP -->
+    <!-- Trusted -->
+    <dependency>
+      <groupId>org.jasig.cas</groupId>
+      <artifactId>cas-server-support-trusted</artifactId>
+      <version>${cas.version}</version>
+    </dependency>
+    <!-- /Trusted -->
+    <!-- SPNEGO -->
+    <dependency>
+      <groupId>org.jasig.cas</groupId>
+      <artifactId>cas-server-support-spnego</artifactId>
+      <version>${cas.version}</version>
+    </dependency>
+    <!-- /SPNEGO -->
+    <!-- OAuth -->
+    <dependency>
+        <groupId>org.jasig.cas</groupId>
+        <artifactId>cas-server-support-oauth</artifactId>
+        <version>${cas.version}</version>
+        <scope>runtime</scope>
+    </dependency>
+    <!-- /OAuth -->
+    <!-- MySQL -->
+    <dependency>
+      <groupId>commons-dbcp</groupId>
+      <artifactId>commons-dbcp</artifactId>
+      <version>1.4</version>
+      <scope>runtime</scope>
+    </dependency>
+    <dependency>
+      <groupId>mysql</groupId>
+      <artifactId>mysql-connector-java</artifactId>
+      <version>5.1.22</version>
+    </dependency>
+    <dependency>
+      <groupId>org.hibernate</groupId>
+      <artifactId>hibernate-core</artifactId>
+      <version>${hibernate.version}</version>
+      <scope>compile</scope>
+    </dependency>
+    <dependency>
+     <groupId>org.hibernate</groupId>
+     <artifactId>hibernate-entitymanager</artifactId>
+     <version>${hibernate.version}</version>
+    </dependency>
+    <!-- /MySQL -->
+    <dependency>
+        <groupId>javax.servlet</groupId>
+        <artifactId>servlet-api</artifactId>
+        <version>2.5</version>
+        <scope>provided</scope>
+    </dependency>
+    <dependency>
+      <groupId>commons-codec</groupId>
+      <artifactId>commons-codec</artifactId>
+      <version>1.8</version>
+    </dependency>
+
   </dependencies>
 
   <build>

@@ -28,6 +28,12 @@
 
   <import resource="spring-configuration/propertyFileConfigurer.xml"/>
 
+  <bean id="negociateSpnego" class="org.jasig.cas.support.spnego.web.flow.SpnegoNegociateCredentialsAction" />
+  
+  <bean id="spnego" class="org.jasig.cas.support.spnego.web.flow.SpnegoCredentialsAction">
+    <property name="centralAuthenticationService" ref="centralAuthenticationService" />
+  </bean>
+
   <!-- Theme Resolver -->
   <bean id="themeResolver" class="org.jasig.cas.services.web.ServiceThemeResolver"
         p:defaultThemeName="${cas.themeResolver.defaultThemeName}"
@@ -94,6 +100,7 @@
         <prop key="/authorizationFailure.html">passThroughController</prop>
         <prop key="/403.html">passThroughController</prop>
         <prop key="/status">healthCheckController</prop>
+        <prop key="/oauth2.0/*">oauth20WrapperController</prop>
       </props>
     </property>
     <property
@@ -140,9 +147,11 @@
       <webflow:always-redirect-on-pause value="false"/>
       <webflow:redirect-in-same-state value="false" />
     </webflow:flow-execution-attributes>
+<!-- LSL CAS-1243
     <webflow:flow-execution-listeners>
       <webflow:listener ref="terminateWebSessionListener" />
     </webflow:flow-execution-listeners>
+-->
   </webflow:flow-executor>
 
   <webflow:flow-registry id="flowRegistry" flow-builder-services="builder">
@@ -273,4 +282,15 @@
 
   <bean id="credentialsValidator" class="org.springframework.validation.beanvalidation.LocalValidatorFactoryBean"
         p:messageInterpolator-ref="messageInterpolator"/>
+    <!-- Trusted -->
+    <bean id="principalFromRemoteAction" class="cz.upce.idp.authentication.adaptors.trusted.web.flow.PrincipalFromRequestRemoteUserNonInteractiveCredentialsAction"
+	p:centralAuthenticationService-ref="centralAuthenticationService" />
+    <!-- /Trusted -->
+    <!-- OAuth -->
+    <bean id="oauth20WrapperController" class="org.jasig.cas.support.oauth.web.OAuth20WrapperController"
+	p:loginUrl="${cas.securityContext.casProcessingFilterEntryPoint.loginUrl}"
+	p:servicesManager-ref="servicesManager"
+	p:ticketRegistry-ref="ticketRegistry"
+	p:timeout="7200" />
+    <!-- /OAuth -->
 </beans>
