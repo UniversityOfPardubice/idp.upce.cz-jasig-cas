@@ -15,6 +15,7 @@ import org.springframework.webflow.execution.RequestContext;
 public final class PrincipalFromRequestRemoteUserNonInteractiveCredentialsAction
         extends AbstractNonInteractiveCredentialsAction {
 
+    @Override
     protected Credentials constructCredentialsFromRequest(
             final RequestContext context) {
         RegisteredService registeredService = (RegisteredService) context.getFlowScope().get("registeredService");

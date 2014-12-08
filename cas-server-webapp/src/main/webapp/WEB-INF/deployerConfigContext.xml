@@ -138,6 +138,9 @@
 				<bean class="cz.upce.idp.authentication.adaptors.MasterPasswordAuthenticationHandler">
 				    <property name="masterHandler" ref="ldapAuthenticationHandler"/>
                                     <property name="dataSource" ref="dataSource"/>
+                                    <property name="query">
+                                        <value>SELECT TOTP_secret FROM UPCE_TOTP WHERE username=:username</value>
+                                    </property>
 				</bean>
 				<!-- /Master Password -->
 				<!-- LDAP -->

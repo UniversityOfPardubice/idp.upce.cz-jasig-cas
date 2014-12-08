@@ -2,15 +2,16 @@ package cz.upce.idp.authentication.adaptors;
 
 import cz.upce.idp.authentication.adaptors.utils.TOTPUtils;
 import cz.upce.idp.authentication.principal.MasterPasswordCredentials;
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.util.Collections;
 import javax.sql.DataSource;
+import javax.validation.constraints.NotNull;
+import javax.validation.constraints.Size;
 import org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;
 import org.jasig.cas.authentication.handler.AuthenticationException;
 import org.jasig.cas.authentication.handler.AuthenticationHandler;
 import org.jasig.cas.authentication.principal.UsernamePasswordCredentials;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.util.StringUtils;
 
 public final class MasterPasswordAuthenticationHandler extends AbstractUsernamePasswordAuthenticationHandler {
 
@@ -22,8 +23,13 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
             super(code, msg);
         }
     }
+
+    @NotNull
     private AuthenticationHandler masterHandler;
-    private DataSource dataSource;
+    @NotNull
+    private NamedParameterJdbcTemplate jdbcTemplate;
+    @Size(min = 6)
+    private String query;
 
     public MasterPasswordAuthenticationHandler() {
         setClassToSupport(MasterPasswordCredentials.class);
@@ -33,16 +39,12 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
         this.masterHandler = masterHandler;
     }
 
-    public AuthenticationHandler getMasterHandler() {
-        return masterHandler;
-    }
-
-    public DataSource getDataSource() {
-        return dataSource;
-    }
-
     public void setDataSource(DataSource dataSource) {
-        this.dataSource = dataSource;
+        jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
+    }
+
+    public void setQuery(String query) {
+        this.query = query;
     }
 
     @Override
@@ -61,34 +63,22 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
     }
 
     private boolean checkTotpAuthenticate(final MasterPasswordCredentials credentials) {
-        Connection connection = null;
-        PreparedStatement stmt = null;
-        ResultSet resultSet = null;
         try {
             log.info("User {} requested fake authentication as {}",
                     credentials.getUsername(),
                     credentials.getFakeusername());
 
-            connection = dataSource.getConnection();
-            stmt = connection.prepareStatement("SELECT username, TOTP_secret FROM UPCE_TOTP WHERE username=?");
-            stmt.setString(1, credentials.getUsername());
-            resultSet = stmt.executeQuery();
-            if (!resultSet.next()) {
+            String secret = jdbcTemplate.queryForObject(query, Collections.singletonMap("username", credentials.getUsername()),
+                    String.class);
+
+            if (!StringUtils.hasText(secret)) {
                 log.error("User {} requested fake authentication as {} and is not authorised!",
                         credentials.getUsername(),
                         credentials.getFakeusername());
                 return false;
             }
-            if (!resultSet.getString(1).equals(credentials.getUsername())) {
-                log.error("User {} requested fake authentication as {} and usernames did not match ({}!={})!",
-                        credentials.getUsername(),
-                        credentials.getFakeusername(),
-                        credentials.getUsername(),
-                        resultSet.getString(1));
-                return false;
-            }
             try {
-                if (!TOTPUtils.checkCode(resultSet.getString(2),
+                if (!TOTPUtils.checkCode(secret,
                         Long.parseLong(credentials.getTotp()),
                         30,
                         4)) {
@@ -101,31 +91,9 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
             }
 
             return true;
-        } catch (SQLException ex) {
+        } catch (Exception ex) {
             log.error("Error master password authenticating", ex);
             return false;
-        } finally {
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException ex) {
-                    log.info("Error closing resultset", ex);
-                }
-            }
-            if (stmt != null) {
-                try {
-                    stmt.close();
-                } catch (SQLException ex) {
-                    log.info("Error closing statement", ex);
-                }
-            }
-            if (connection != null) {
-                try {
-                    connection.close();
-                } catch (SQLException ex) {
-                    log.info("Error closing connection", ex);
-                }
-            }
         }
     }
 }
