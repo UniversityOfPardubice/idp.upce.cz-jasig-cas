@@ -28,6 +28,7 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
     private AuthenticationHandler masterHandler;
     @NotNull
     private NamedParameterJdbcTemplate jdbcTemplate;
+    @NotNull
     @Size(min = 6)
     private String query;
 
