@@ -1,4 +1,4 @@
-<%-- %Id% --%>
+<%-- $Id$ --%>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 <c:set var='loginPage' value='${true}' />
 <jsp:directive.include file="includes/top.jsp" />
@@ -20,12 +20,18 @@
         <label for="password"><spring:message code="upce.screen.welcome.label.password"/></label>
         <form:password cssErrorClass="error" id="password" path="password" htmlEscape="true" autocomplete="off" />
       </div>
+      <c:if test="${registeredService.isTwoFactor()}">
+        <div class="input">
+          <label for="token"><spring:message code="upce.screen.welcome.label.token"/></label>
+          <form:password cssErrorClass="error" id="token" path="token" htmlEscape="true" autocomplete="off" />
+        </div>
+      </c:if>
       <div class="login">
         <button type="submit" name="submit"><spring:message code="upce.screen.welcome.button.login"/></button>
       </div>
     </form:form>
   </section>
-  <c:if test="${registeredService.isSsoEnabled()}">
+  <c:if test="${registeredService.isSsoEnabled() && !registeredService.isTwoFactor()}">
     <section class="factor non-mobile" id="factor-kerberos">
       <h2><spring:message code="upce.kerberos.title"/></h2>
       <form:form method="post" commandName="${commandName}" htmlEscape="true">

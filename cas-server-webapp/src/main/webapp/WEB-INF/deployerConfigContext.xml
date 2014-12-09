@@ -106,11 +106,6 @@
 					<property name="attributeRepository" ref="attributeRepository" />
 				</bean>
 				<!-- /Trusted -->
-				<!-- SPNEGO -->
-				<bean class="org.jasig.cas.support.spnego.authentication.principal.SpnegoCredentialsToPrincipalResolver">
-					<property name="attributeRepository" ref="attributeRepository" />
-				</bean>
-				<!-- /SPNEGO -->
 			</list>
 		</property>
 
@@ -146,23 +141,18 @@
 				<!-- LDAP -->
                                 <ref local="ldapAuthenticationHandler"/>
 				<!-- /LDAP -->
-				<!-- SPNEGO -->
-				<bean class="org.jasig.cas.support.spnego.authentication.handler.support.JCIFSSpnegoAuthenticationHandler">
-				    <property name="authentication">
-					<bean class="jcifs.spnego.Authentication" />
-				    </property>
-				    <property name="principalWithDomainName" value="false" />
-				    <property name="NTLMallowed" value="true" />
-				</bean>
-				<!-- /SPNEGO -->
 			</list>
 		</property>
 	</bean>
 
-        <bean id="ldapAuthenticationHandler" class="org.jasig.cas.adaptors.ldap.FastBindLdapAuthenticationHandler"
+        <bean id="ldapAuthenticationHandler" class="cz.upce.idp.authentication.adaptors.TokenAwareLdapAuthenticationHandler"
             p:filter="%u@upce.cz"
             p:contextSource-ref="ldapContextSource"
-            p:ignorePartialResultException="true" />
+            p:ignorePartialResultException="true"
+            p:dataSource-ref="dataSource"
+            p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=:username"
+            p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=:username"
+            p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" />
 
 
 	<!--
@@ -358,14 +348,4 @@
       </list>
     </property>
   </bean>
-  
-  <!-- SPNEGO -->
-  <bean name="jcifsConfig" class="org.jasig.cas.support.spnego.authentication.handler.support.JCIFSConfig">
-    <property name="jcifsServicePrincipal" value="${upce.kerberos.principal}" />
-    <property name="kerberosDebug" value="true" />
-    <property name="kerberosRealm" value="${upce.kerberos.realm}" />
-    <property name="kerberosKdc" value="${upce.kerberos.kdc}" />
-    <property name="loginConf" value="${upce.kerberos.conf}" />
-  </bean>
-  <!-- /SPNEGO -->
 </beans>
