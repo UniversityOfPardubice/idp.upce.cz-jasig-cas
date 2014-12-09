@@ -78,6 +78,10 @@
 					<form:checkbox path="ssoEnabled" value="true" cssClass="check" />
 					<label for="ssoEnabled1" id="ssl-l" class="postField"><spring:message code="management.services.add.property.status.ssoParticipant" /></label>
 				</span>
+				<span class="oneChoice">
+					<form:checkbox path="twoFactor" value="false" cssClass="check" />
+					<label for="twoFactor1" id="twoFactor-l" class="postField"><spring:message code="management.services.add.property.status.twoFactor" /></label>
+				</span>
 				
 				<span class="oneChoice">
 					<form:checkbox path="anonymousAccess" value="true" cssClass="check" />
