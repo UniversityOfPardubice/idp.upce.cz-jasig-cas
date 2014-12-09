@@ -19,7 +19,7 @@ public final class PrincipalFromRequestRemoteUserNonInteractiveCredentialsAction
     protected Credentials constructCredentialsFromRequest(
             final RequestContext context) {
         RegisteredService registeredService = (RegisteredService) context.getFlowScope().get("registeredService");
-        if (registeredService == null || !registeredService.isSsoEnabled()) {
+        if (registeredService == null || !registeredService.isSsoEnabled() || registeredService.isTwoFactor()) {
             throw new UnauthorizedSsoServiceException();
         }
 
