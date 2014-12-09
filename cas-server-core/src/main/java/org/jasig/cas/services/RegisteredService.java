@@ -148,4 +148,7 @@ public interface RegisteredService extends Cloneable, Serializable {
     boolean matches(final Service service);
     
     Object clone() throws CloneNotSupportedException;
+    
+    boolean isTwoFactor();
+    void setTwoFactor(boolean twoFactor);
 }

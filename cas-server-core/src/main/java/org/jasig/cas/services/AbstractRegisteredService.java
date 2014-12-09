@@ -92,6 +92,8 @@ public abstract class AbstractRegisteredService
     private boolean anonymousAccess = false;
 
     private boolean ignoreAttributes = false;
+    
+    protected boolean twoFactor = false;
 
     @Column(name = "evaluation_order", nullable = false)
     private int evaluationOrder;
@@ -147,6 +149,14 @@ public abstract class AbstractRegisteredService
         return this.ssoEnabled;
     }
 
+    public boolean isTwoFactor() {
+        return twoFactor;
+    }
+
+    public void setTwoFactor(boolean twoFactor) {
+        this.twoFactor = twoFactor;
+    }
+    
     public boolean equals(Object o) {
         if (o == null) { 
             return false; 
@@ -175,6 +185,7 @@ public abstract class AbstractRegisteredService
                   .append(this.serviceId, that.serviceId)
                   .append(this.theme, that.theme)
                   .append(this.usernameAttribute, that.usernameAttribute)
+                  .append(this.twoFactor, that.twoFactor)
                   .isEquals();
     }
 
@@ -191,6 +202,7 @@ public abstract class AbstractRegisteredService
                   .append(this.ignoreAttributes)
                   .append(this.evaluationOrder)
                   .append(this.usernameAttribute)
+                  .append(this.twoFactor)
                   .toHashCode();
     }
 
@@ -297,6 +309,7 @@ public abstract class AbstractRegisteredService
         this.setIgnoreAttributes(source.isIgnoreAttributes());
         this.setEvaluationOrder(source.getEvaluationOrder());
         this.setUsernameAttribute(source.getUsernameAttribute());
+        this.setTwoFactor(source.isTwoFactor());
     }
 
     /**
