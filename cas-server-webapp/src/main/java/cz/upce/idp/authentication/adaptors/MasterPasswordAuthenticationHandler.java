@@ -80,9 +80,7 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
             }
             try {
                 if (!TOTPUtils.checkCode(secret,
-                        Long.parseLong(credentials.getTotp()),
-                        30,
-                        4)) {
+                        Long.parseLong(credentials.getTotp()))) {
                     log.error("Error checking TOTP code for {}", credentials.getUsername());
                     return false;
                 }
