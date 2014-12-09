@@ -221,9 +221,13 @@
   <bean id="initialRegisteredServiceFlowSetupAction" class="cz.upce.idp.authentication.web.flow.InitialFlowSetupAction"
         p:servicesManager-ref="servicesManager"/>
 
-  <bean id="authenticationViaFormAction" class="org.jasig.cas.web.flow.AuthenticationViaFormAction"
-        p:centralAuthenticationService-ref="centralAuthenticationService"
-        p:warnCookieGenerator-ref="warnCookieGenerator"/>
+  <bean id="authenticationViaFormAction" class="cz.upce.idp.authentication.web.flow.RequestContextAwareAuthenticationViaFormAction">
+    <property name="masterFormAction">
+      <bean class="org.jasig.cas.web.flow.AuthenticationViaFormAction"
+            p:centralAuthenticationService-ref="centralAuthenticationService"
+            p:warnCookieGenerator-ref="warnCookieGenerator"/>
+    </property>
+  </bean>
 
   <bean id="generateServiceTicketAction" class="org.jasig.cas.web.flow.GenerateServiceTicketAction"
         p:centralAuthenticationService-ref="centralAuthenticationService"/>

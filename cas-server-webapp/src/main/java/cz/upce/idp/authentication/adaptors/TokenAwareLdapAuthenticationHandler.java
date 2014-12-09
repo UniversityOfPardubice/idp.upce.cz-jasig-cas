@@ -11,7 +11,9 @@ import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import org.jasig.cas.adaptors.ldap.FastBindLdapAuthenticationHandler;
 import org.jasig.cas.authentication.principal.Credentials;
+import org.jasig.cas.services.RegisteredService;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.webflow.execution.RequestContext;
 
 public class TokenAwareLdapAuthenticationHandler extends FastBindLdapAuthenticationHandler {
 
@@ -53,6 +55,11 @@ public class TokenAwareLdapAuthenticationHandler extends FastBindLdapAuthenticat
             return false;
         }
         UsernamePasswordTokenCredentials credentials = (UsernamePasswordTokenCredentials) cred;
+        RequestContext requestContext = credentials.getRequestContext();
+        RegisteredService registeredService = (RegisteredService) requestContext.getFlowScope().get("registeredService");
+        if (registeredService == null || !registeredService.isTwoFactor()) {
+            return true;
+        }
         Map<String, String> usernameQueryParameters = Collections.singletonMap("username", credentials.getUsername());
         try {
             Boolean totpEnabled = jdbcTemplate.queryForObject(totpEnabledQuery, usernameQueryParameters, Boolean.class);

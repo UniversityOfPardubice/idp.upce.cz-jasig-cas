@@ -1,12 +1,14 @@
 package cz.upce.idp.authentication.principal;
 
 import org.jasig.cas.authentication.principal.UsernamePasswordCredentials;
+import org.springframework.webflow.execution.RequestContext;
 
-public class UsernamePasswordTokenCredentials extends UsernamePasswordCredentials {
+public class UsernamePasswordTokenCredentials extends UsernamePasswordCredentials implements RequestContextAware {
 
     private static final long serialVersionUID = 1607907854347781399L;
 
     private String token;
+    transient private RequestContext requestContext;
 
     public String getToken() {
         return token;
@@ -14,6 +16,15 @@ public class UsernamePasswordTokenCredentials extends UsernamePasswordCredential
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    @Override
+    public void setRequestContext(RequestContext requestContext) {
+        this.requestContext = requestContext;
+    }
+
+    public RequestContext getRequestContext() {
+        return requestContext;
     }
 
     @Override
