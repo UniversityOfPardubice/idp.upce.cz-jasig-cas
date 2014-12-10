@@ -66,16 +66,20 @@ public class DatabasePump {
 
         List<Map<String, Object>> items = sourceJdbcTemplate.queryForList(selectQuery, Collections.EMPTY_MAP);
         LOGGER.info("Preparing pump for {} items", items.size());
-        List<Map<String, Object>> targetParameters = new LinkedList<Map<String, Object>>();
+        int completed = 0;
         for (Map<String, Object> item : items) {
             Map<String, Object> parameters = new HashMap<String, Object>();
             for (Map.Entry<String, String> map : mapping.entrySet()) {
                 parameters.put(map.getValue(), item.get(map.getKey()));
             }
-            targetParameters.add(parameters);
+            try {
+                int count = targetJdbcTemplate.update(insertQuery, parameters);
+                completed += count;
+                LOGGER.info("{}/{} rows added", completed, items.size());
+            } catch (Throwable th) {
+                LOGGER.error("Error adding", th);
+            }
         }
-        LOGGER.info("Pumping {} items", items.size());
-        targetJdbcTemplate.batchUpdate(insertQuery, targetParameters.toArray(new Map[0]));
 
         LOGGER.info("Pumping finished");
     }
