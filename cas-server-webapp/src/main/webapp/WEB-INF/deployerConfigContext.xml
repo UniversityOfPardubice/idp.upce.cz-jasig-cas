@@ -152,7 +152,9 @@
             p:dataSource-ref="dataSource"
             p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=:username"
             p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=:username"
-            p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" />
+            p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" 
+            p:tokenSalt="${upce.token.salt}"
+            p:hashFunction="SHA-512" />
 
 
 	<!--
@@ -300,6 +302,11 @@
 	    p:url="${upce.db.url}"
 	    p:username="${upce.db.user}"
 	    p:password="${upce.db.password}"/>
+	<bean id="oraOstDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+	    p:driverClassName="${upce.ora-db.driver}"
+	    p:url="${upce.ora-db.url}"
+	    p:username="${upce.ora-db.user}"
+	    p:password="${upce.ora-db.password}"/>
 	
 
     <!-- LDAP -->
@@ -348,4 +355,27 @@
       </list>
     </property>
   </bean>
+
+    <bean class="org.springframework.scheduling.quartz.SimpleTriggerBean"
+          p:repeatInterval="3600000">
+        <property name="jobDetail">
+            <bean class="org.springframework.scheduling.quartz.MethodInvokingJobDetailFactoryBean"
+              p:targetMethod="pump">
+                <property name="targetObject">
+                    <bean class="cz.upce.idp.authentication.utils.DatabasePump">
+                        <property name="sourceDataSource" ref="oraOstDataSource"/>
+                        <property name="targetDataSource" ref="dataSource"/>
+                        <property name="selectQuery" value="select AD_LOGIN, substr(RODNE_CISLO, 7, 4) TOKEN from OSOBY"></property>
+                        <property name="insertQuery" value="replace into UpceTokens (netid, defaultToken) values (:adLogin, SHA2('${upce.token.salt}' :token, 512))"></property>
+                        <property name="mapping">
+                            <map>
+                                <entry key="AD_LOGIN" value="adLogin"/>
+                                <entry key="TOKEN" value="token"/>
+                            </map>
+                        </property>
+                    </bean>
+                </property>
+            </bean>
+        </property>
+    </bean>
 </beans>

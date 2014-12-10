@@ -2,13 +2,16 @@ package cz.upce.idp.authentication.adaptors;
 
 import cz.upce.idp.authentication.adaptors.utils.TOTPUtils;
 import cz.upce.idp.authentication.principal.UsernamePasswordTokenCredentials;
+import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Collections;
 import java.util.Map;
 import javax.sql.DataSource;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
+import org.apache.commons.codec.binary.Hex;
 import org.jasig.cas.adaptors.ldap.FastBindLdapAuthenticationHandler;
 import org.jasig.cas.authentication.principal.Credentials;
 import org.jasig.cas.services.RegisteredService;
@@ -28,8 +31,12 @@ public class TokenAwareLdapAuthenticationHandler extends FastBindLdapAuthenticat
     @NotNull
     @Size(min = 6)
     private String totpSecretQuery;
+    @NotNull
+    @Size(min = 10)
+    private String tokenSalt;
+    private MessageDigest hashDigest;
 
-    public TokenAwareLdapAuthenticationHandler() {
+    public TokenAwareLdapAuthenticationHandler() throws NoSuchAlgorithmException {
         setClassToSupport(UsernamePasswordTokenCredentials.class);
     }
 
@@ -47,6 +54,14 @@ public class TokenAwareLdapAuthenticationHandler extends FastBindLdapAuthenticat
 
     public void setTotpSecretQuery(String totpSecretQuery) {
         this.totpSecretQuery = totpSecretQuery;
+    }
+
+    public void setTokenSalt(String tokenSalt) {
+        this.tokenSalt = tokenSalt;
+    }
+
+    public void setHashFunction(String hashDigest) throws NoSuchAlgorithmException {
+        this.hashDigest = MessageDigest.getInstance(hashDigest);
     }
 
     @Override
@@ -81,10 +96,18 @@ public class TokenAwareLdapAuthenticationHandler extends FastBindLdapAuthenticat
         return TOTPUtils.checkCode(secret, Long.parseLong(credentials.getToken()));
     }
 
-    private boolean checkToken(UsernamePasswordTokenCredentials credentials) {
+    private boolean checkToken(UsernamePasswordTokenCredentials credentials) throws UnsupportedEncodingException {
         log.info("Authenticating '{}' with static token", credentials.getUsername());
         Map<String, String> usernameQueryParameters = Collections.singletonMap("username", credentials.getUsername());
         String token = jdbcTemplate.queryForObject(tokenQuery, usernameQueryParameters, String.class);
-        return credentials.getToken() != null && credentials.getToken().equals(token);
+        if (token == null) {
+            return false;
+        }
+
+        String saltedEnteredToken = tokenSalt + credentials.getToken();
+        byte[] hashedEnteredTokenBytes = hashDigest.digest(saltedEnteredToken.getBytes("UTF-8"));
+        String hashedEnteredToken = Hex.encodeHexString(hashedEnteredTokenBytes);
+
+        return hashedEnteredToken.equals(token);
     }
 }
