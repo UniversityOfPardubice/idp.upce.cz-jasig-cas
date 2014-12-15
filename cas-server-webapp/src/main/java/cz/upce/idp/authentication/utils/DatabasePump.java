@@ -75,11 +75,13 @@ public class DatabasePump {
             targetParameters.add(parameters);
         }
         LOGGER.info("Pumping {} items", items.size());
-        try {
-            targetJdbcTemplate.batchUpdate(insertQuery, targetParameters.toArray(new Map[0]));
-        } catch (Throwable th) {
-            LOGGER.error("Error adding", th);
-            return;
+        for (Map<String, Object> targetParameter : targetParameters) {
+            try {
+                targetJdbcTemplate.update(insertQuery, targetParameter);
+            } catch (Throwable th) {
+                LOGGER.error("Error adding " + targetParameter, th);
+                return;
+            }
         }
 
         LOGGER.info("Pumping finished");
