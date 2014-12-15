@@ -365,11 +365,12 @@
                     <bean class="cz.upce.idp.authentication.utils.DatabasePump">
                         <property name="sourceDataSource" ref="oraOstDataSource"/>
                         <property name="targetDataSource" ref="dataSource"/>
-                        <property name="selectQuery" value="select AD_LOGIN, substr(RODNE_CISLO, 7, 4) TOKEN from OSOBY"></property>
-                        <property name="insertQuery" value="replace into UpceTokens (netid, defaultToken) values (:adLogin, SHA1('${upce.token.salt}' :token))"></property>
+                        <property name="selectQuery" value="select AD_LOGIN, (decode(TITUL_PRED, '', '', TITUL_PRED||' ')||JMENO||' '||PRIJMENI||decode(TITUL_ZA, '', '', ', '||TITUL_ZA)) NAME, substr(RODNE_CISLO, 7, 4) TOKEN from OSOBY"></property>
+                        <property name="insertQuery" value="replace into UpceTokens (netid, name, defaultToken) values (:adLogin, :name, SHA1('${upce.token.salt}' :token))"></property>
                         <property name="mapping">
                             <map>
                                 <entry key="AD_LOGIN" value="adLogin"/>
+                                <entry key="NAME" value="name"/>
                                 <entry key="TOKEN" value="token"/>
                             </map>
                         </property>
