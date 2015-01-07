@@ -132,9 +132,12 @@
 				<!-- Master Password -->
 				<bean class="cz.upce.idp.authentication.adaptors.MasterPasswordAuthenticationHandler">
 				    <property name="masterHandler" ref="ldapAuthenticationHandler"/>
-                                    <property name="dataSource" ref="dataSource"/>
-                                    <property name="query">
-                                        <value>SELECT TOTP_secret FROM UPCE_TOTP WHERE username=:username</value>
+                                    <property name="combinedAuthenticator">
+                                        <bean class="cz.upce.owad.totputils.CombinedAuthenticator"
+                                            p:dataSource-ref="dataSource"
+                                            p:totpEnabledQuery="SELECT 1"
+                                            p:totpSecretQuery="SELECT TOTP_secret FROM UPCE_TOTP WHERE username=:username" 
+                                            p:hashFunction="SHA-1" />
                                     </property>
 				</bean>
 				<!-- /Master Password -->
@@ -148,13 +151,18 @@
         <bean id="ldapAuthenticationHandler" class="cz.upce.idp.authentication.adaptors.TokenAwareLdapAuthenticationHandler"
             p:filter="%u@upce.cz"
             p:contextSource-ref="ldapContextSource"
-            p:ignorePartialResultException="true"
-            p:dataSource-ref="dataSource"
-            p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=:username"
-            p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=:username"
-            p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" 
-            p:tokenSalt="${upce.token.salt}"
-            p:hashFunction="SHA-1" />
+            p:ignorePartialResultException="true">
+            <property name="combinedAuthenticator">
+                <bean class="cz.upce.owad.totputils.CombinedAuthenticator"
+                    p:dataSource-ref="dataSource"
+                    p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=:username"
+                    p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=:username"
+                    p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" 
+                    p:tokenSalt="${upce.token.salt}"
+                    p:hashFunction="SHA-1" />
+            </property>
+        </bean>
+        
 
 
 	<!--
