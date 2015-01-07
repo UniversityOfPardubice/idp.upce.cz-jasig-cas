@@ -1,36 +1,28 @@
 package cz.upce.idp.authentication.adaptors;
 
-import cz.upce.idp.authentication.adaptors.utils.TOTPUtils;
 import cz.upce.idp.authentication.principal.MasterPasswordCredentials;
-import java.util.Collections;
-import javax.sql.DataSource;
+import cz.upce.owad.totputils.CombinedAuthenticator;
 import javax.validation.constraints.NotNull;
-import javax.validation.constraints.Size;
 import org.jasig.cas.authentication.handler.support.AbstractUsernamePasswordAuthenticationHandler;
 import org.jasig.cas.authentication.handler.AuthenticationException;
 import org.jasig.cas.authentication.handler.AuthenticationHandler;
 import org.jasig.cas.authentication.principal.UsernamePasswordCredentials;
-import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
-import org.springframework.util.StringUtils;
 
 public final class MasterPasswordAuthenticationHandler extends AbstractUsernamePasswordAuthenticationHandler {
 
     public static class MasterPasswordAuthenticationException extends AuthenticationException {
 
-        private static final long serialVersionUID = -1771045657713564526L;
+        private static final long serialVersionUID = 1889389023022318802L;
 
-        public MasterPasswordAuthenticationException(String code, String msg) {
-            super(code, msg);
+        public MasterPasswordAuthenticationException(String code, Throwable cause) {
+            super(code, cause);
         }
     }
 
     @NotNull
     private AuthenticationHandler masterHandler;
     @NotNull
-    private NamedParameterJdbcTemplate jdbcTemplate;
-    @NotNull
-    @Size(min = 6)
-    private String query;
+    private CombinedAuthenticator combinedAuthenticator;
 
     public MasterPasswordAuthenticationHandler() {
         setClassToSupport(MasterPasswordCredentials.class);
@@ -40,12 +32,8 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
         this.masterHandler = masterHandler;
     }
 
-    public void setDataSource(DataSource dataSource) {
-        jdbcTemplate = new NamedParameterJdbcTemplate(dataSource);
-    }
-
-    public void setQuery(String query) {
-        this.query = query;
+    public void setCombinedAuthenticator(CombinedAuthenticator combinedAuthenticator) {
+        this.combinedAuthenticator = combinedAuthenticator;
     }
 
     @Override
@@ -54,45 +42,20 @@ public final class MasterPasswordAuthenticationHandler extends AbstractUsernameP
         if (!authenticated) {
             return false;
         }
-        if (checkTotpAuthenticate((MasterPasswordCredentials) credentials)) {
-            log.info("User {} successfully authenticated as {}", credentials.getUsername(), ((MasterPasswordCredentials) credentials).getFakeusername());
-            credentials.setUsername(((MasterPasswordCredentials) credentials).getFakeusername());
-            return true;
-        } else {
-            throw new MasterPasswordAuthenticationException("TOTP Error", "Error authenticating");
+        try {
+            checkTotpAuthenticate((MasterPasswordCredentials) credentials);
+        } catch (cz.upce.owad.totputils.AuthenticationException ex) {
+            throw new MasterPasswordAuthenticationException("Error authenticating Master password", ex);
         }
+        log.info("User {} successfully authenticated as {}", credentials.getUsername(), ((MasterPasswordCredentials) credentials).getFakeusername());
+        credentials.setUsername(((MasterPasswordCredentials) credentials).getFakeusername());
+        return true;
     }
 
-    private boolean checkTotpAuthenticate(final MasterPasswordCredentials credentials) {
-        try {
-            log.info("User {} requested fake authentication as {}",
-                    credentials.getUsername(),
-                    credentials.getFakeusername());
-
-            String secret = jdbcTemplate.queryForObject(query, Collections.singletonMap("username", credentials.getUsername()),
-                    String.class);
-
-            if (!StringUtils.hasText(secret)) {
-                log.error("User {} requested fake authentication as {} and is not authorised!",
-                        credentials.getUsername(),
-                        credentials.getFakeusername());
-                return false;
-            }
-            try {
-                if (!TOTPUtils.checkCode(secret,
-                        Long.parseLong(credentials.getTotp()))) {
-                    log.error("Error checking TOTP code for {}", credentials.getUsername());
-                    return false;
-                }
-            } catch (Exception ex) {
-                log.error("Error checking TOTP code", ex);
-                return false;
-            }
-
-            return true;
-        } catch (Exception ex) {
-            log.error("Error master password authenticating", ex);
-            return false;
-        }
+    private void checkTotpAuthenticate(final MasterPasswordCredentials credentials) throws cz.upce.owad.totputils.AuthenticationException {
+        log.info("User {} requested fake authentication as {}",
+                credentials.getUsername(),
+                credentials.getFakeusername());
+        combinedAuthenticator.checkSecuredPasswordOrTotp(credentials.getUsername(), credentials.getTotp());
     }
 }

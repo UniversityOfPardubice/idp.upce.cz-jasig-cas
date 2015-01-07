@@ -272,9 +272,9 @@
         <scope>provided</scope>
     </dependency>
     <dependency>
-      <groupId>commons-codec</groupId>
-      <artifactId>commons-codec</artifactId>
-      <version>1.8</version>
+        <groupId>cz.upce.owad</groupId>
+        <artifactId>totputils</artifactId>
+        <version>1.0</version>
     </dependency>
 
   </dependencies>
