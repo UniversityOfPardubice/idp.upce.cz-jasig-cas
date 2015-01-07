@@ -20,7 +20,7 @@
         <form:password cssErrorClass="error" id="password" path="password" htmlEscape="true" autocomplete="off" />
       </div>
       <c:if test="${registeredService.isTwoFactor()}">
-        <div class="input">
+        <div class="input two-factor">
           <label for="token"><spring:message code="upce.screen.welcome.label.token"/></label>
           <form:password cssErrorClass="error" id="token" path="token" htmlEscape="true" autocomplete="off" />
         </div>
@@ -28,6 +28,9 @@
       <div class="login">
         <button type="submit" name="submit"><spring:message code="upce.screen.welcome.button.login"/></button>
       </div>
+      <c:if test="${registeredService.isTwoFactor()}">
+        <div id="two-factor-info"><spring:message code="upce.screen.welcome.two-factor-info"/></div>
+      </c:if>
     </form:form>
   </section>
   <c:if test="${registeredService.isSsoEnabled() && !registeredService.isTwoFactor()}">
