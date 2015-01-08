@@ -136,7 +136,7 @@
                                         <bean class="cz.upce.owad.totputils.CombinedAuthenticator"
                                             p:dataSource-ref="dataSource"
                                             p:totpEnabledQuery="SELECT 1"
-                                            p:totpSecretQuery="SELECT TOTP_secret FROM UPCE_TOTP WHERE username=:username" 
+                                            p:totpSecretQuery="SELECT TOTP_secret FROM UPCE_TOTP WHERE username=?" 
                                             p:hashFunction="SHA-1" />
                                     </property>
 				</bean>
@@ -155,9 +155,9 @@
             <property name="combinedAuthenticator">
                 <bean class="cz.upce.owad.totputils.CombinedAuthenticator"
                     p:dataSource-ref="dataSource"
-                    p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=:username"
-                    p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=:username"
-                    p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=:username" 
+                    p:totpEnabledQuery="SELECT usesTotp FROM UpceTokens WHERE netid=?"
+                    p:tokenQuery="SELECT IFNULL(token, defaultToken) FROM UpceTokens WHERE netid=?"
+                    p:totpSecretQuery="SELECT totpSecret FROM UpceTokens WHERE netid=?" 
                     p:tokenSalt="${upce.token.salt}"
                     p:hashFunction="SHA-1" />
             </property>
@@ -305,12 +305,12 @@
 	    <property name="entityManagerFactory" ref="entityManagerFactory"/>
 	</bean>
 	<tx:annotation-driven transaction-manager="transactionManager"/>
-	<bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
+	<bean id="dataSource" class="org.apache.commons.dbcp2.BasicDataSource"
 	    p:driverClassName="${upce.db.driver}"
 	    p:url="${upce.db.url}"
 	    p:username="${upce.db.user}"
 	    p:password="${upce.db.password}"/>
-	<bean id="oraOstDataSource" class="org.apache.commons.dbcp.BasicDataSource"
+	<bean id="oraOstDataSource" class="org.apache.commons.dbcp2.BasicDataSource"
 	    p:driverClassName="${upce.ora-db.driver}"
 	    p:url="${upce.ora-db.url}"
 	    p:username="${upce.ora-db.user}"
